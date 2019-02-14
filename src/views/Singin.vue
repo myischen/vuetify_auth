@@ -77,7 +77,7 @@ export default {
             password: this.password,
           }
           const result = api.create(params).then(res => {
-            console.log('dd:' + res)
+            console.log(res)
           })
         }
       })
