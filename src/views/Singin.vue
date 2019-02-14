@@ -19,7 +19,7 @@
                 dark
                 color="primary"
               >
-                <v-toolbar-title>登陆</v-toolbar-title>
+                <v-toolbar-title>{{$t('login')}}</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
                 <v-form>
@@ -27,7 +27,7 @@
                     prepend-icon="person"
                     v-model="username"
                     name="username"
-                    label="用户名/手机号/邮箱"
+                    :label="$t('username')"
                     type="text"
                     v-validate="'required'"
                     :error-messages="errors.collect('username')"
@@ -37,7 +37,7 @@
                     prepend-icon="lock"
                     v-model="password"
                     name="password"
-                    label="密码"
+                    :label="$t('password')"
                     type="password"
                     v-validate="'required'"
                     :error-messages="errors.collect('password')"
@@ -50,7 +50,7 @@
                 <v-btn
                   color="primary"
                   @click="submit"
-                >登陆</v-btn>
+                >{{ $t('login') }}</v-btn>
               </v-card-actions>
             </v-card>
           </v-flex>
@@ -61,6 +61,8 @@
 </template>
 
 <script>
+import * as api from '@/api/user'
+
 export default {
   data: () => ({
     username: '',
@@ -68,7 +70,17 @@ export default {
   }),
   methods: {
     submit () {
-      this.$validator.validateAll()
+      this.$validator.validateAll().then(res => {
+        if (res) {
+          const params = {
+            username: this.username,
+            password: this.password,
+          }
+          const result = api.create(params).then(res => {
+            console.log('dd:' + res)
+          })
+        }
+      })
     }
   }
 }
