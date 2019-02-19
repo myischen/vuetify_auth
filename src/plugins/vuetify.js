@@ -7,5 +7,5 @@ Vue.use(Vuetify, {
   iconfont: 'md',
   lang: {
     t: (key, ...params) => i18n.t(key, params)
-  },
+  }
 })

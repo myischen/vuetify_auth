@@ -1,3 +1,3 @@
 module.exports = {
-  username: "Username/Mobile Number/Email",
+  username: 'Username/Mobile Number/Email'
 }

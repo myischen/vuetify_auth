@@ -9,6 +9,7 @@ import en from 'vee-validate/dist/locale/en'
 Vue.use(VeeValidate, {
   i18n,
   i18nRootKey: 'validation',
+  events: 'input|blur',
   dictionary: {
     zh_CN: zh_CN,
     en: en
@@ -23,14 +24,15 @@ const Dictionary = {
     },
     attributes: {
       username: '账号',
-      phone: '手机号',
-      password: '密码'
+      moblie: '手机号',
+      password: '密码',
+      verification_code: '验证码'
     }
   }
 }
 
-/*自定义方法 */
-Validator.extend('phone', {
+/* 自定义方法 */
+Validator.extend('moblie', {
   getMessage: field => '手机格式不正确',
   validate: value =>
     value.length === 11 && /^((13|14|15|17|18)[0-9]{1}\d{8})$/.test(value)

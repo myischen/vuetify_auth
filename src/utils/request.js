@@ -1,4 +1,5 @@
 import axios from 'axios'
+import * as utils from './utils'
 
 const baseURL = process.env.VUE_APP_BASE_API
 
@@ -10,8 +11,14 @@ let instance = axios.create({
 // 添加请求拦截器
 instance.interceptors.request.use(
   config => {
-    // let token = account.getToken()
-    // config.headers.common['Authorization'] = token
+    const SessionToken = sessionStorage.getItem('token')
+    // const cookieToken = utils.getCookie('token')
+    const token = SessionToken // ? SessionToken : cookieToken
+
+    if (token) {
+      config.headers.Authorization = 'Bearer ' + token
+    }
+    //
     // 在发送请求之前做些什么
     return config
   }, error => {
@@ -27,7 +34,7 @@ instance.interceptors.response.use(
   }
 )
 
-function hanldeReq(type, url, data, parms) {
+function hanldeReq (type, url, data, parms) {
   data = data || {}
   parms = parms || {}
   return new Promise((resolve, reject) => {
