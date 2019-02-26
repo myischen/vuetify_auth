@@ -54,6 +54,26 @@
           </v-card>
         </v-flex>
       </v-layout>
+      <v-dialog
+        v-model="dialog"
+        hide-overlay
+        persistent
+        width="300"
+      >
+        <v-card
+          color="primary"
+          dark
+        >
+          <v-card-text>
+            Please stand by
+            <v-progress-linear
+              indeterminate
+              color="white"
+              class="mb-0"
+            ></v-progress-linear>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-container>
   </v-content>
 </template>
@@ -65,7 +85,8 @@ export default {
   data: () => ({
     username: '',
     password: '',
-    token: null
+    token: null,
+    dialog: false
   }),
   methods: {
     submit () {
@@ -78,6 +99,7 @@ export default {
           api.singin(params).then(res => {
             this.token = res
             this.$store.commit('setAuth', { token: res.access_token })
+            this.dialog = true
           }).then(() => {
             api.info().then(data => {
               this.$store.commit('setAuth', { user: data.data })

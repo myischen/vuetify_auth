@@ -29,7 +29,7 @@
                   :data-vv-as="$t('name')"
                   type="text"
                   v-validate="'required'"
-                  :error-messages="
+                  :error-messages="reserrors.username?reserrors.username:
                   errors.collect('username')"
                   required
                 ></v-text-field>
@@ -39,9 +39,8 @@
                   :label="$t('Mobile number or email')"
                   :rules="typeRules"
                   v-validate="'required'"
-                  :error-messages="
+                  :error-messages="reserrors.type?reserrors.type:
                   errors.collect('type')"
-                  type="text"
                   required
                 ></v-text-field>
                 <v-text-field
@@ -50,7 +49,7 @@
                   :label="$t('password')"
                   type="password"
                   v-validate="'required'"
-                  :error-messages="errors.collect('password')"
+                  :error-messages="reserrors.password?reserrors.password:errors.collect('password')"
                   required
                 ></v-text-field>
                 <v-layout
@@ -62,9 +61,10 @@
                       v-model="verification_code"
                       name="verification_code"
                       :label="$t('Verification code')"
+                      type="text"
                       data-vv-validate-on="change"
                       v-validate="'required'"
-                      :error-messages="errors.collect('verification_code')"
+                      :error-messages="reserrors.verification_code?reserrors.verification_code:errors.collect('verification_code')"
                       required
                     ></v-text-field>
                   </v-flex>
@@ -72,6 +72,7 @@
                     <v-btn
                       small
                       color="primary"
+                      @click="sedcode"
                     >seedcode</v-btn>
                   </v-flex>
                 </v-layout>
@@ -87,20 +88,79 @@
           </v-card>
         </v-flex>
       </v-layout>
+      <v-dialog
+        v-model="dialog"
+        persistent
+        max-width="290"
+      >
+        <v-card>
+          <v-card-text>
+            <v-layout
+              align-center
+              justify-center
+            >
+              <v-flex
+                xs12
+                sm6
+                grow
+              >
+                <v-text-field
+                  v-model="captcha_code"
+                  name="captcha_code"
+                  :label="$t('Verification code')"
+                  type="text"
+                  :rules="captchaCodeRules"
+                  :error-messages="messages"
+                  required
+                ></v-text-field>
+              </v-flex>
+              <v-flex
+                xs10
+                sm6
+                shrink
+              >
+                <v-img
+                  :src="images"
+                  @click="getCaptchaCode"
+                />
+              </v-flex>
+            </v-layout>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="primary"
+              @click="checkcode"
+            >
+              确定</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </v-content>
 </template>
-
+    
 <script>
+import * as api from '@/api/user'
 export default {
   data () {
     return {
       username: '',
       type: '',
-      typeError: '',
+      captcha_key: '',
+      captcha_code: '',
+      verification_key: '',
       verification_code: '',
       Codeshow: false,
       password: '',
+      reserrors: {},
+      dialog: false,
+      images: '',
+      messages: '',
+      captchaCodeRules: [
+        v => !!v || this.$i18n.t('Verification code') + '不能为空',
+      ],
       typeRules: [
         v => {
           const email = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
@@ -118,16 +178,70 @@ export default {
           }
         }
       ]
-
     }
   },
   methods: {
     submit () {
       this.$validator.validateAll().then(res => {
-        if (res) { }
+        if (res) {
+          let params
+          if (!(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(this.type))) {
+            params = {
+              username: this.username,
+              password: this.password,
+              phone: this.type,
+              verification_key: this.verification_key,
+              verification_code: this.verification_code
+
+            }
+          } else {
+            params = {
+              username: this.username,
+              password: this.password,
+              email: this.type
+            }
+          }
+
+          api.singup(params).then(res => {
+            this.$store.commit('setAuth', { user: res, token: res.meta.access_token })
+          }).catch(error => {
+            if (error.status === 422) {
+              const resdata = error.data.errors
+              this.reserrors = resdata
+              if (resdata.email) {
+                this.reserrors.type = resdata.email
+              } else {
+                this.reserrors.type = resdata.phone
+              }
+            }
+          })
+        }
+      })
+    },
+    getCaptchaCode () {
+      api.captchas({ phone: this.type }).then(res => {
+        this.dialog = true
+        this.captcha_key = res.captcha_key
+        this.images = res.captcha_image_content
+      }).catch(error => {
+        this.reserrors = error.data.errors
+        this.reserrors.type = error.data.errors.phone
+      })
+    },
+    sedcode () {
+      this.getCaptchaCode()
+    },
+    checkcode () {
+      api.Codes({ captcha_key: this.captcha_key, captcha_code: this.captcha_code }).then(res => {
+        this.verification_key = res.key
+        this.captcha_key = ''
+        this.captcha_code = ''
+        this.dialog = false
+      }).catch(error => {
+        this.messages = error.data.message !== '' ? error.data.message : error.data.errors.captcha_code
+        this.getCaptchaCode()
       })
     }
-
   }
 }
 </script>

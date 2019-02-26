@@ -18,7 +18,7 @@ instance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = 'Bearer ' + token
     }
-    //
+    config.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
     // 在发送请求之前做些什么
     return config
   }, error => {
@@ -30,7 +30,7 @@ instance.interceptors.response.use(
   response => {
     return response
   }, error => {
-    return Promise.reject(error)
+    return Promise.reject(error.response)
   }
 )
 
