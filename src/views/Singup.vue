@@ -38,6 +38,7 @@
                   name="type"
                   :label="$t('Mobile number or email')"
                   :rules="typeRules"
+                  :data-vv-as="$t('Mobile number or email')"
                   v-validate="'required'"
                   :error-messages="reserrors.type?reserrors.type:
                   errors.collect('type')"
@@ -159,22 +160,22 @@ export default {
       images: '',
       messages: '',
       captchaCodeRules: [
-        v => !!v || this.$i18n.t('Verification code') + '不能为空',
+        v => !!v || this.$i18n.t('must') + this.$i18n.t('Verification code'),
       ],
       typeRules: [
         v => {
-          const email = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
-          const phone = /^(13[0-9]\d{8}|15[0-35-9]\d{8}|18[0-9]\{8}|14[57]\d{8})$/
+          const email = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+          const phone = /^(13[0-9]\d{8}|15[0-35-9]\d{8}|18[0-9]\{8}|14[57]\d{8})$/;
           if (!(phone.test(v)) && !(email.test(v))) {
-            return this.$i18n.t('Mobile number or email') + '不正确' // '手机号或邮箱不正确';
+            return this.$i18n.t('Mobile number or email') + this.$i18n.t('not true');
           } else if ((phone.test(v)) && !(email.test(v))) {
-            this.Codeshow = true
-            return false
+            this.Codeshow = true;
+            return false;
           } else if (!(phone.test(v)) && (email.test(v))) {
-            this.Codeshow = false
-            return false
+            this.Codeshow = false;
+            return false;
           } else {
-            return false
+            return false;
           }
         }
       ]
@@ -203,16 +204,21 @@ export default {
           }
 
           api.singup(params).then(res => {
-            this.$store.commit('setAuth', { user: res, token: res.meta.access_token })
+            this.$store.commit('updateToken', res.meta.access_token);
+            this.$store.commit('singIn', res);
           }).catch(error => {
             if (error.status === 422) {
-              const resdata = error.data.errors
-              this.reserrors = resdata
+              const resdata = error.data.errors;
+              this.reserrors = resdata;
               if (resdata.email) {
-                this.reserrors.type = resdata.email
+                this.reserrors.type = resdata.email;
               } else {
-                this.reserrors.type = resdata.phone
+                this.reserrors.type = resdata.phone;
               }
+            }
+            if (error.status === 401) {
+              this.reserrors = {};
+              this.reserrors.verification_code = error.data.message;
             }
           })
         }
@@ -221,11 +227,11 @@ export default {
     getCaptchaCode () {
       api.captchas({ phone: this.type }).then(res => {
         this.dialog = true
-        this.captcha_key = res.captcha_key
-        this.images = res.captcha_image_content
+        this.captcha_key = res.captcha_key;
+        this.images = res.captcha_image_content;
       }).catch(error => {
-        this.reserrors = error.data.errors
-        this.reserrors.type = error.data.errors.phone
+        this.reserrors = error.data.errors;
+        this.reserrors.type = error.data.errors.phone;
       })
     },
     sedcode () {
@@ -233,13 +239,13 @@ export default {
     },
     checkcode () {
       api.Codes({ captcha_key: this.captcha_key, captcha_code: this.captcha_code }).then(res => {
-        this.verification_key = res.key
-        this.captcha_key = ''
-        this.captcha_code = ''
-        this.dialog = false
+        this.verification_key = res.key;
+        this.captcha_key = '';
+        this.captcha_code = '';
+        this.dialog = false;
       }).catch(error => {
-        this.messages = error.data.message !== '' ? error.data.message : error.data.errors.captcha_code
-        this.getCaptchaCode()
+        this.messages = error.data.message !== '' ? error.data.message : error.data.errors.captcha_code;
+        this.getCaptchaCode();
       })
     }
   }

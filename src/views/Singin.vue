@@ -65,7 +65,7 @@
           dark
         >
           <v-card-text>
-            Please stand by
+            加载中.....
             <v-progress-linear
               indeterminate
               color="white"
@@ -97,12 +97,12 @@ export default {
             password: this.password
           }
           api.singin(params).then(res => {
-            this.token = res
-            this.$store.commit('setAuth', { token: res.access_token })
-            this.dialog = true
+            this.token = res;
+            this.$store.commit('updateToken', res.access_token);
+            this.dialog = true;
           }).then(() => {
             api.info().then(data => {
-              this.$store.commit('setAuth', { user: data.data })
+              this.$store.commit('singIn', data.data);
             })
           })
         }

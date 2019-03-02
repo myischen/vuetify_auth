@@ -1,14 +1,17 @@
 // https://vuex.vuejs.org/en/mutations.html
 
-import * as utils from '@/utils/utils'
+import ls from '@/utils/localStorage'
 export default {
-  setAuth (state, {
-    user,
-    token
-  }) {
-    state.user = user
-    state.token = token
-    sessionStorage.setItem('user', user)
-    sessionStorage.setItem('token', token)
-  }
+  updateUser(state, user) {
+    state.user = user;
+    ls.setItem('user', user);
+  },
+  updateAuth(state, auth) {
+    state.auth = auth;
+    ls.setItem('auth', auth);
+  },
+  updateToken(state, token) {
+    state.token = token;
+    ls.setItem('token', token);
+  },
 }
