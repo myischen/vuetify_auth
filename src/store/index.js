@@ -7,25 +7,29 @@
  */
 
 // Lib imports
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
 
 // Store functionality
-import actions from './actions'
-import getters from './getters'
-import modules from './modules'
-import mutations from './mutations'
-import state from './state'
+import actions from './actions';
+import getters from './getters';
+import mutations from './mutations';
+import state from './state';
+import router from './modules/router';
+import user from './modules/user';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 // Create a new store
 const store = new Vuex.Store({
+  state,
+  mutations,
   actions,
   getters,
-  modules,
-  mutations,
-  state
-})
+  modules: {
+    router,
+    user
+  }
+});
 
-export default store
+export default store;

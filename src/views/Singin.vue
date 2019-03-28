@@ -29,19 +29,25 @@
                   :label="$t('username')"
                   type="text"
                   v-validate="'required'"
-                  :error-messages="errors.collect('username')"
+                  :error-messages="reserrors.username?reserrors.username:
+                  errors.collect('username')"
                   required
                 ></v-text-field>
                 <v-text-field
-                  prepend-icon="lock"
+                  prepend-icon="
+                  lock"
                   v-model="password"
                   name="password"
                   :label="$t('password')"
                   type="password"
-                  v-validate="'required'"
-                  :error-messages="errors.collect('password')"
+                  v-validate="'required|min:6'"
+                  :error-messages="reserrors.password?reserrors.password:errors.collect('password')"
                   required
                 ></v-text-field>
+                <v-checkbox
+                  v-model="rememberMe"
+                  required
+                ></v-checkbox>
               </v-form>
             </v-card-text>
             <v-card-actions>
@@ -49,8 +55,23 @@
               <v-btn
                 color="primary"
                 @click="submit"
+                @keyup.enter.native="submit"
               >{{ $t('singin') }}</v-btn>
             </v-card-actions>
+            <v-snackbar
+              v-model="snackbar"
+              color="error"
+              multi-line
+              top
+              :timeout="6000"
+            >
+              {{text}}
+              <v-btn
+                dark
+                flat
+                @click="snackbar = false"
+              >关闭</v-btn>
+            </v-snackbar>
           </v-card>
         </v-flex>
       </v-layout>
@@ -80,13 +101,18 @@
 
 <script>
 import * as api from '@/api/user'
+import ls from '@/utils/localStorage';
 
 export default {
   data: () => ({
     username: '',
     password: '',
     token: null,
-    dialog: false
+    rememberMe: false,
+    dialog: false,
+    reserrors: {},
+    snackbar: false,
+    text: '',
   }),
   methods: {
     submit () {
@@ -97,14 +123,28 @@ export default {
             password: this.password
           }
           api.singin(params).then(res => {
-            this.token = res;
-            this.$store.commit('updateToken', res.access_token);
+            this.reserrors = {};
+            if (this.rememberMe) ls.setItem('token', res.access_token);
+            this.$store.commit('setToken', res.access_token);
             this.dialog = true;
-          }).then(() => {
             api.info().then(data => {
-              this.$store.commit('singIn', data.data);
+              this.$store.dispatch('singIn', data.data);
+            });
+            api.userMenu().then(Menu => {
+              this.$store.commit('setMenu', Menu);
             })
+          }).catch(error => {
+            if (error.status === 422) {
+              this.reserrors = error.data.errors;
+            }
+            if (error.status === 401) {
+              this.snackbar = true;
+              this.text = error.data.message;
+
+            }
           })
+
+
         }
       })
     }

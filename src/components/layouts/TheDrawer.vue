@@ -29,46 +29,46 @@
         </v-layout>
         <v-list-group
           v-else-if="item.children"
-          :key="item.text"
+          :key="item.name"
           v-model="item.model"
-          :prepend-icon="item.model ? item.icon : item['icon-alt']"
+          :prepend-icon="item.model ? item.meta.icon : item.meta['icon-alt']"
           append-icon=""
         >
           <template v-slot:activator>
             <v-list-tile>
               <v-list-tile-content>
                 <v-list-tile-title>
-                  {{ item.text }}
+                  {{ $t(item.meta.title) }}
                 </v-list-tile-title>
               </v-list-tile-content>
             </v-list-tile>
           </template>
           <v-list-tile
             v-for="(child, i) in item.children"
-            :key="i"
-            @click=""
+            :key="item.name"
+            :to="item.href"
           >
-            <v-list-tile-action v-if="child.icon">
-              <v-icon>{{ child.icon }}</v-icon>
+            <v-list-tile-action v-if="child.meta.icon">
+              <v-icon>{{ child.meta.icon }}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title>
-                {{ child.text }}
+                {{ $t(child.meta.title) }}
               </v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </v-list-group>
         <v-list-tile
           v-else
-          :key="item.text"
-          @click=""
+          :key="item.name"
+          :to="item.href"
         >
           <v-list-tile-action>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon>{{ item.meta.icon }}</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>
-              {{ item.text }}
+              {{ $t(item.meta.title) }}
             </v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -78,44 +78,50 @@
 </template>
   
 <script>
+import { mapState } from 'vuex';
 export default {
   name: 'TheDrawer',
   data () {
     return {
-      drawer: false,
-      items: [
-        { icon: 'contacts', text: 'Contacts' },
-        { icon: 'history', text: 'Frequently contacted' },
-        { icon: 'content_copy', text: 'Duplicates' },
-        {
-          icon: 'keyboard_arrow_up',
-          'icon-alt': 'keyboard_arrow_down',
-          text: 'Labels',
-          model: true,
-          children: [
-            { icon: 'add', text: 'Create label' }
-          ]
-        },
-        {
-          icon: 'keyboard_arrow_up',
-          'icon-alt': 'keyboard_arrow_down',
-          text: 'More',
-          model: false,
-          children: [
-            { text: 'Import' },
-            { text: 'Export' },
-            { text: 'Print' },
-            { text: 'Undo changes' },
-            { text: 'Other contacts' }
-          ]
-        },
-        { icon: 'settings', text: 'Settings' },
-        { icon: 'chat_bubble', text: 'Send feedback' },
-        { icon: 'help', text: 'Help' },
-        { icon: 'phonelink', text: 'App downloads' },
-        { icon: 'keyboard', text: 'Go to the old version' }
-      ]
+      drawer: true,
+      // items: [
+      //   { icon: 'contacts', text: 'Contacts' },
+      //   { icon: 'history', text: 'Frequently contacted' },
+      //   { icon: 'content_copy', text: 'Duplicates' },
+      //   {
+      //     icon: 'keyboard_arrow_up',
+      //     'icon-alt': 'keyboard_arrow_down',
+      //     text: 'Labels',
+      //     model: true,
+      //     children: [
+      //       { icon: 'add', text: 'Create label' }
+      //     ]
+      //   },
+      //   {
+      //     icon: 'keyboard_arrow_up',
+      //     'icon-alt': 'keyboard_arrow_down',
+      //     text: 'More',
+      //     model: false,
+      //     children: [
+      //       { text: 'Import' },
+      //       { text: 'Export' },
+      //       { text: 'Print' },
+      //       { text: 'Undo changes' },
+      //       { text: 'Other contacts' }
+      //     ]
+      //   },
+      //   { icon: 'settings', text: 'Settings' },
+      //   { icon: 'chat_bubble', text: 'Send feedback' },
+      //   { icon: 'help', text: 'Help' },
+      //   { icon: 'phonelink', text: 'App downloads' },
+      //   { icon: 'keyboard', text: 'Go to the old version' }
+      // ]
     };
+  },
+  computed: {
+    ...mapState({
+      items: state => state.router.routers
+    })
   }
 }
 </script>

@@ -11,7 +11,7 @@ let instance = axios.create({
 // 添加请求拦截器
 instance.interceptors.request.use(
   config => {
-    const token = ls.getItem('token');
+    const token = ls.getItem('token') || sessionStorage.getItem('token');
 
     if (token) {
       config.headers.Authorization = 'Bearer ' + token;

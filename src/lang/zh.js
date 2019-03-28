@@ -8,4 +8,4 @@ module.exports = {
   password: '密码',
   singin: '登陆',
   singup: '注册',
-}
+};
